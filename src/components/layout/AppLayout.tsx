@@ -56,23 +56,23 @@ export function AppLayout({ children, currentTab, onTabChange, onAddClick }: App
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full relative overflow-hidden">
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Mobile Header */}
-        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
+        <header className="shrink-0 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
           <span className="text-lg font-bold tracking-tighter text-indigo-600">SubTrack</span>
           <Button variant="ghost" size="icon" onClick={onAddClick} className="text-indigo-600">
             <Plus className="h-5 w-5" />
           </Button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
-          <div className="mx-auto max-w-5xl h-full">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <div className="mx-auto max-w-5xl">
             {children}
           </div>
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="absolute bottom-0 left-0 right-0 border-t border-slate-200 bg-white md:hidden pb-safe">
+        <nav className="shrink-0 border-t border-slate-200 bg-white md:hidden pb-safe">
           <div className="flex h-16 items-center justify-around px-2">
             {navItems.map((item) => {
               const Icon = item.icon;
