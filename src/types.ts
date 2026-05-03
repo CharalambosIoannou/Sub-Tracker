@@ -9,6 +9,11 @@ export type Category =
   | 'Fitness'
   | 'Other';
 
+export interface PriceHistoryEntry {
+  date: string;
+  amount: number;
+}
+
 export interface Subscription {
   id: string;
   name: string;
@@ -21,4 +26,6 @@ export interface Subscription {
   isActive: boolean;
   isTrial?: boolean;
   trialEndDate?: string;
+  notificationOffsetDays?: number; // Days before renewal to notify (custom rule)
+  priceHistory?: PriceHistoryEntry[]; // Historical pricing for price hike tracking
 }

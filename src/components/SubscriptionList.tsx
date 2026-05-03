@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Search, Plus, Trash2, Power, Pencil, Play, Pause, ChevronDown, CalendarDays } from 'lucide-react';
+import { motion, PanInfo } from 'motion/react';
 import { Subscription } from '../types';
-import { formatCurrency, getBrandLogoUrl } from '../lib/utils';
+import { formatCurrency, getBrandLogoUrl, getCategoryColor } from '../lib/utils';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { getNextPaymentDate } from '../lib/calculations';
@@ -48,6 +49,11 @@ export function SubscriptionList({ subscriptions, onUpdate, onDelete, onAddClick
     return result;
   }, [subscriptions, search, sortBy]);
 
+  const handleDragEnd = (event: any, info: PanInfo, sub: Subscription) => {
+    // If we dragged far enough left, we could maybe trigger an action, 
+    // but just revealing the buttons is standard.
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in">
       <header className="mb-8">
@@ -81,7 +87,7 @@ export function SubscriptionList({ subscriptions, onUpdate, onDelete, onAddClick
         </div>
       </div>
 
-      <div className="space-y-3 pb-24">
+      <div className="space-y-4 pb-24">
         {filteredAndSorted.length === 0 ? (
           <div className="text-center py-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 border-dashed bg-slate-50 dark:bg-slate-900/50">
             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-1">No subscriptions found</h3>
@@ -93,73 +99,14 @@ export function SubscriptionList({ subscriptions, onUpdate, onDelete, onAddClick
           </div>
         ) : (
           filteredAndSorted.map(sub => (
-            <div 
-              key={sub.id} 
-              className={`group flex flex-col md:flex-row md:items-center p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:border-indigo-200 dark:hover:border-indigo-800 cursor-pointer ${!sub.isActive ? 'opacity-60 grayscale-[0.5]' : ''}`}
-              onClick={() => onEditClick(sub)}
-            >
-              <div className="flex items-center w-full md:w-auto overflow-hidden">
-                <div 
-                  className="flex h-12 w-12 items-center justify-center rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-200 dark:border-slate-700"
-                >
-                  <img 
-                    src={getBrandLogoUrl(sub.name)} 
-                    alt={sub.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                      const parent = (e.target as HTMLElement).parentElement;
-                      if (parent) {
-                        parent.innerHTML = `<span class="text-lg font-bold" style="color: ${sub.color || '#fff'}">${sub.name.charAt(0).toUpperCase()}</span>`;
-                        parent.style.backgroundColor = `${sub.color}20`;
-                      }
-                    }}
-                  />
-                </div>
-                
-                <div className="ml-4 flex-1 overflow-hidden min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{sub.name}</h3>
-                    {!sub.isActive && (
-                      <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400 shrink-0 border border-slate-200 dark:border-slate-700">
-                        Paused
-                      </span>
-                    )}
-                    {sub.isTrial && sub.isActive && (
-                      <span className="inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-400 shrink-0">
-                        Free Trial
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-slate-500 dark:text-slate-400 truncate mt-0.5 flex gap-2 items-center">
-                    <span>{sub.category}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <CalendarDays className="h-3 w-3" />
-                      {format(getNextPaymentDate(sub.startDate, sub.billingCycle), 'MMM d')}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-right ml-4 shrink-0 md:mr-6">
-                  <div className="font-bold text-slate-900 dark:text-slate-100">
-                    {formatCurrency(sub.amount)}
-                  </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 capitalize mt-0.5">
-                    / {sub.billingCycle.replace('ly', '')}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 md:w-auto md:mt-0 md:pt-0 md:border-t-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
+            <div key={sub.id} className="relative overflow-hidden rounded-2xl bg-red-50 dark:bg-red-900/20">
+              {/* Background actions revealed on swipe */}
+              <div className="absolute inset-y-0 right-0 flex items-center justify-end px-4 gap-2 w-full max-w-[120px]">
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUpdate(sub.id, { isActive: !sub.isActive });
-                  }}
-                  className={`h-9 w-9 ${sub.isActive ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30' : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'}`}
+                  onClick={() => onUpdate(sub.id, { isActive: !sub.isActive })}
+                  className={`h-10 w-10 bg-white dark:bg-slate-800 shadow-sm rounded-full ${sub.isActive ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50' : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'}`}
                   title={sub.isActive ? "Pause subscription" : "Resume subscription"}
                 >
                   {sub.isActive ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
@@ -167,18 +114,111 @@ export function SubscriptionList({ subscriptions, onUpdate, onDelete, onAddClick
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     if (confirm(`Are you sure you want to delete ${sub.name}?`)) {
                       onDelete(sub.id);
                     }
                   }}
-                  className="h-9 w-9 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                  className="h-10 w-10 bg-white dark:bg-slate-800 shadow-sm rounded-full text-red-500 hover:text-red-700 hover:bg-red-50"
                   title="Delete subscription"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
+
+              {/* Draggable Foreground Card */}
+              <motion.div 
+                drag="x"
+                dragConstraints={{ left: -140, right: 0 }}
+                dragElastic={0.1}
+                onDragEnd={(e, info) => handleDragEnd(e, info, sub)}
+                onClick={() => onEditClick(sub)}
+                className={`relative z-10 flex flex-col sm:flex-row sm:items-center p-4 bg-white dark:bg-slate-900 border-y border-r border-l-4 border-y-slate-200 dark:border-y-slate-800 border-r-slate-200 dark:border-r-slate-800 shadow-sm rounded-2xl transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer ${!sub.isActive ? 'opacity-70 grayscale-[0.5]' : ''}`}
+                style={{ borderLeftColor: getCategoryColor(sub.category) }}
+              >
+                <div className="flex items-center w-full sm:w-auto overflow-hidden">
+                  <div 
+                    className="flex h-12 w-12 items-center justify-center rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-200 dark:border-slate-700"
+                  >
+                    <img 
+                      src={getBrandLogoUrl(sub.name)} 
+                      alt={sub.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                        const parent = (e.target as HTMLElement).parentElement;
+                        if (parent) {
+                          parent.innerHTML = `<span class="text-lg font-bold" style="color: ${getCategoryColor(sub.category) || '#fff'}">${sub.name.charAt(0).toUpperCase()}</span>`;
+                          parent.style.backgroundColor = `${getCategoryColor(sub.category)}20`;
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="ml-4 flex-1 overflow-hidden min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{sub.name}</h3>
+                      {!sub.isActive && (
+                        <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400 shrink-0 border border-slate-200 dark:border-slate-700">
+                          Paused
+                        </span>
+                      )}
+                      {sub.isTrial && sub.isActive && (
+                        <span className="inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-400 shrink-0">
+                          Free Trial
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400 truncate mt-0.5 flex gap-2 items-center">
+                      <span>{sub.category}</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <CalendarDays className="h-3 w-3" />
+                        {format(getNextPaymentDate(sub.startDate, sub.billingCycle), 'MMM d')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right ml-4 shrink-0 sm:ml-auto">
+                    <div className="font-bold text-slate-900 dark:text-slate-100">
+                      {formatCurrency(sub.amount, sub.currency)}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 capitalize mt-0.5">
+                      / {sub.billingCycle.replace('ly', '')}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Desktop Actions on hover */}
+                <div className="hidden sm:flex items-center justify-end gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUpdate(sub.id, { isActive: !sub.isActive });
+                    }}
+                    className={`h-8 w-8 ${sub.isActive ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30' : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'}`}
+                    title={sub.isActive ? "Pause subscription" : "Resume subscription"}
+                  >
+                    {sub.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Are you sure you want to delete ${sub.name}?`)) {
+                        onDelete(sub.id);
+                      }
+                    }}
+                    className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                    title="Delete subscription"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </motion.div>
             </div>
           ))
         )}

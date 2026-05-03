@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Subscription } from '../types';
 import { calculateTotalMonthlySpend, getMonthlyEquivalent } from '../lib/calculations';
-import { formatCurrency } from '../lib/utils';
+import { formatCurrency, getCategoryColor } from '../lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 
 interface InsightsProps {
@@ -15,14 +15,14 @@ export function Insights({ subscriptions }: InsightsProps) {
   
   const totalMonthly = calculateTotalMonthlySpend(activeSubs);
   
-  const totalSavedMonthly = inactiveSubs.reduce((total, sub) => total + getMonthlyEquivalent(sub.amount, sub.billingCycle), 0);
+  const totalSavedMonthly = inactiveSubs.reduce((total, sub) => total + getMonthlyEquivalent(sub.amount, sub.billingCycle, sub.currency), 0);
   const totalSavedYearly = totalSavedMonthly * 12;
 
   const categoryData = useMemo(() => {
     const map = new Map<string, { name: string; value: number; color: string }>();
     
     activeSubs.forEach(sub => {
-      const monthlyAmount = getMonthlyEquivalent(sub.amount, sub.billingCycle);
+      const monthlyAmount = getMonthlyEquivalent(sub.amount, sub.billingCycle, sub.currency);
       if (map.has(sub.category)) {
         const existing = map.get(sub.category)!;
         existing.value += monthlyAmount;
@@ -30,7 +30,7 @@ export function Insights({ subscriptions }: InsightsProps) {
         map.set(sub.category, { 
           name: sub.category, 
           value: monthlyAmount, 
-          color: sub.color || '#94a3b8' 
+          color: getCategoryColor(sub.category)
         });
       }
     });
@@ -44,16 +44,16 @@ export function Insights({ subscriptions }: InsightsProps) {
     let weekly = 0;
     
     activeSubs.forEach(sub => {
-      const equiv = getMonthlyEquivalent(sub.amount, sub.billingCycle);
+      const equiv = getMonthlyEquivalent(sub.amount, sub.billingCycle, sub.currency);
       if (sub.billingCycle === 'monthly') monthly += equiv;
       else if (sub.billingCycle === 'yearly') yearly += equiv;
       else if (sub.billingCycle === 'weekly') weekly += equiv;
     });
 
     return [
-      { name: 'Monthly Plans', value: monthly, fill: '#4f46e5' },
-      { name: 'Yearly Plans', value: yearly, fill: '#14b8a6' },
-      { name: 'Weekly Plans', value: weekly, fill: '#f59e0b' },
+      { name: 'Monthly Plans', type: 'monthly', value: monthly, fill: '#4f46e5' },
+      { name: 'Yearly Plans', type: 'yearly', value: yearly, fill: '#14b8a6' },
+      { name: 'Weekly Plans', type: 'weekly', value: weekly, fill: '#f59e0b' },
     ].filter(x => x.value > 0);
   }, [activeSubs]);
 
@@ -125,13 +125,13 @@ export function Insights({ subscriptions }: InsightsProps) {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 ${cycleData.length > 1 ? 'lg:grid-cols-2' : ''} gap-6`}>
         {/* Spend by Category Pie Chart */}
         <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="dark:text-slate-100">Spend by Category</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className={cycleData.length > 1 ? '' : 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center'}>
             <div className="h-64 w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -157,7 +157,7 @@ export function Insights({ subscriptions }: InsightsProps) {
               </ResponsiveContainer>
             </div>
             
-            <div className="mt-4 space-y-3">
+            <div className={`space-y-3 ${cycleData.length > 1 ? 'mt-4' : ''}`}>
               {categoryData.map(item => (
                 <div key={item.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -171,36 +171,48 @@ export function Insights({ subscriptions }: InsightsProps) {
           </CardContent>
         </Card>
 
-        {/* Spend by Billing Cycle Bar Chart */}
-        <Card className="dark:bg-slate-900 dark:border-slate-800">
-          <CardHeader>
-            <CardTitle className="dark:text-slate-100">Spend by Billing Cycle (Monthly Equiv)</CardTitle>
-          </CardHeader>
-          <CardContent>
-             <div className="h-64 w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={cycleData} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" opacity={0.2} />
-                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={(val) => `€${val}`} />
-                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    formatter={(value: number) => [formatCurrency(value), 'Equivalent/mo']}
-                    contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)' }}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
-                    {cycleData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-             </div>
-             <p className="text-sm mt-6 text-slate-500 dark:text-slate-400 text-center">
-               This visualizes how your total cost distributes across cycle types, converted to a monthly scale.
-             </p>
-          </CardContent>
-        </Card>
+        {/* Spend by Billing Cycle Bar Chart or Text Summary */}
+        {cycleData.length > 1 ? (
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
+            <CardHeader>
+              <CardTitle className="dark:text-slate-100">Spend by Billing Cycle (Monthly Equiv)</CardTitle>
+            </CardHeader>
+            <CardContent>
+               <div className="h-64 w-full mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={cycleData} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" opacity={0.2} />
+                    <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={(val) => `€${val}`} />
+                    <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                      formatter={(value: number) => [formatCurrency(value), 'Equivalent/mo']}
+                      contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)' }}
+                    />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
+                      {cycleData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+               </div>
+               <p className="text-sm mt-6 text-slate-500 dark:text-slate-400 text-center">
+                 This visualizes how your total cost distributes across cycle types, converted to a monthly scale.
+               </p>
+            </CardContent>
+          </Card>
+        ) : cycleData.length === 1 ? (
+          <Card className="dark:bg-slate-900 dark:border-slate-800 border-dashed bg-slate-50/50 dark:bg-slate-900/50">
+            <CardContent className="flex flex-col justify-center h-full p-8 text-center">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Uniform Billing</h3>
+              <p className="text-slate-500 dark:text-slate-400">
+                All your active subscriptions are billed <strong className="text-slate-800 dark:text-slate-200 capitalize">{cycleData[0].type}</strong>. 
+                This equals <strong className="text-indigo-600 dark:text-indigo-400">{formatCurrency(cycleData[0].value)}</strong> in equivalent monthly spend.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
 
       {activeSubs.length > 0 && (

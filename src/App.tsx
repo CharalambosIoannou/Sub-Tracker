@@ -48,7 +48,7 @@ export default function App() {
   const renderContent = () => {
     switch (currentTab) {
       case 'dashboard':
-        return <Dashboard subscriptions={subscriptions} onNavigate={setCurrentTab} />;
+        return <Dashboard subscriptions={subscriptions} onNavigate={setCurrentTab} onEditClick={(sub) => setSubToView(sub)} />;
       case 'upcoming':
         return <UpcomingView subscriptions={subscriptions} />;
       case 'subscriptions':

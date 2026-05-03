@@ -98,7 +98,7 @@ export function UpcomingView({ subscriptions }: UpcomingViewProps) {
                   <div className="text-left sm:text-right mt-4 sm:mt-0 shrink-0 bg-slate-50 dark:bg-slate-800/50 sm:bg-transparent p-3 sm:p-0 rounded-lg sm:rounded-none border border-slate-100 dark:border-slate-800 sm:border-none">
                     <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 sm:hidden">Amount Due</div>
                     <div className="font-extrabold text-xl text-slate-900 dark:text-slate-100">
-                      {formatCurrency(subscription.amount)}
+                      {formatCurrency(subscription.amount, subscription.currency)}
                     </div>
                     <div className={`flex items-center sm:justify-end text-sm mt-1 font-medium ${
                       daysUntil === 0 

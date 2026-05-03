@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { format } from 'date-fns';
-import { CreditCard, CalendarDays, Wallet, TrendingUp, AlertCircle, ArrowRight } from 'lucide-react';
+import { CreditCard, CalendarDays, Wallet, TrendingUp, AlertCircle, ArrowRight, Settings } from 'lucide-react';
 import { Subscription } from '../types';
 import { calculateTotalMonthlySpend, getUpcomingPayments, getMonthlyEquivalent } from '../lib/calculations';
 import { formatCurrency, getBrandLogoUrl } from '../lib/utils';
@@ -10,9 +10,10 @@ import { Button } from './ui/Button';
 interface DashboardProps {
   subscriptions: Subscription[];
   onNavigate: (tab: string) => void;
+  onEditClick?: (sub: Subscription) => void;
 }
 
-export function Dashboard({ subscriptions, onNavigate }: DashboardProps) {
+export function Dashboard({ subscriptions, onNavigate, onEditClick }: DashboardProps) {
   const activeSubs = subscriptions.filter(s => s.isActive);
   const totalMonthly = calculateTotalMonthlySpend(subscriptions);
   const dailyBurn = totalMonthly / 30.436875;
@@ -24,7 +25,7 @@ export function Dashboard({ subscriptions, onNavigate }: DashboardProps) {
   const highestExpense = useMemo(() => {
     if (activeSubs.length === 0) return null;
     return [...activeSubs].sort((a, b) => 
-      getMonthlyEquivalent(b.amount, b.billingCycle) - getMonthlyEquivalent(a.amount, a.billingCycle)
+      getMonthlyEquivalent(b.amount, b.billingCycle, b.currency) - getMonthlyEquivalent(a.amount, a.billingCycle, a.currency)
     )[0];
   }, [activeSubs]);
 
@@ -113,7 +114,7 @@ export function Dashboard({ subscriptions, onNavigate }: DashboardProps) {
           ) : (
             <div className="space-y-3">
               {peekUpcoming.map(({ subscription, nextPaymentDate, daysUntil }) => (
-                <Card key={subscription.id} className="dark:bg-slate-900 dark:border-slate-800 transition-colors hover:border-indigo-200 dark:hover:border-indigo-800">
+                <Card key={subscription.id} className="dark:bg-slate-900 dark:border-slate-800 transition-colors hover:border-indigo-200 dark:hover:border-indigo-800 cursor-pointer" onClick={() => onEditClick && onEditClick(subscription)}>
                   <CardContent className="p-4 flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700">
                       <img 
@@ -145,7 +146,7 @@ export function Dashboard({ subscriptions, onNavigate }: DashboardProps) {
                     </div>
                     
                     <div className="font-bold text-slate-900 dark:text-slate-100">
-                      {formatCurrency(subscription.amount)}
+                      {formatCurrency(subscription.amount, subscription.currency)}
                     </div>
                   </CardContent>
                 </Card>
@@ -171,10 +172,10 @@ export function Dashboard({ subscriptions, onNavigate }: DashboardProps) {
                   </div>
                 </div>
                 
-                <div className="bg-white dark:bg-slate-900/80 rounded-xl p-4 border border-orange-100 dark:border-orange-800/50 shadow-sm">
+                <div className="bg-white dark:bg-slate-900/80 rounded-xl p-4 border border-orange-100 dark:border-orange-800/50 shadow-sm mb-4">
                   <div className="flex justify-between items-center text-sm mb-2">
                     <span className="text-slate-500 dark:text-slate-400">Monthly eq.</span>
-                    <strong className="text-slate-900 dark:text-slate-100">{formatCurrency(getMonthlyEquivalent(highestExpense.amount, highestExpense.billingCycle))}</strong>
+                    <strong className="text-slate-900 dark:text-slate-100">{formatCurrency(getMonthlyEquivalent(highestExpense.amount, highestExpense.billingCycle, highestExpense.currency))}</strong>
                   </div>
                   {highestExpenseNextPayment && (
                     <div className="flex justify-between items-center text-sm">
@@ -183,9 +184,14 @@ export function Dashboard({ subscriptions, onNavigate }: DashboardProps) {
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-orange-700 dark:text-orange-400/80 mt-4 text-center font-medium">
-                  Could you pause or switch to a cheaper tier?
-                </p>
+                
+                <Button 
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white gap-2 shadow-sm"
+                  onClick={() => onEditClick && onEditClick(highestExpense)}
+                >
+                  <Settings className="w-4 h-4" />
+                  Review Plan
+                </Button>
               </CardContent>
             </Card>
           ) : (
