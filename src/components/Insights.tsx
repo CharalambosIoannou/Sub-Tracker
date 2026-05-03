@@ -14,15 +14,9 @@ export function Insights({ subscriptions }: InsightsProps) {
   const inactiveSubs = subscriptions.filter(s => !s.isActive);
   
   const totalMonthly = calculateTotalMonthlySpend(activeSubs);
-  const dailyCost = totalMonthly / 30.436875;
-  const yearlyCost = totalMonthly * 12;
   
   const totalSavedMonthly = inactiveSubs.reduce((total, sub) => total + getMonthlyEquivalent(sub.amount, sub.billingCycle), 0);
   const totalSavedYearly = totalSavedMonthly * 12;
-
-  const mostExpensive = [...activeSubs].sort((a, b) => 
-    getMonthlyEquivalent(b.amount, b.billingCycle) - getMonthlyEquivalent(a.amount, a.billingCycle)
-  )[0];
 
   const categoryData = useMemo(() => {
     const map = new Map<string, { name: string; value: number; color: string }>();
@@ -81,79 +75,42 @@ export function Insights({ subscriptions }: InsightsProps) {
   return (
     <div className="space-y-6 animate-in fade-in pb-8">
       <header className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Your Insights</h1>
-        <p className="text-slate-500 mt-1">Deep dive into your ongoing recurring costs.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Your Insights</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Deep dive into your ongoing recurring costs.</p>
       </header>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold text-slate-500 tracking-wide uppercase">Daily Burn</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{formatCurrency(dailyCost)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold text-slate-500 tracking-wide uppercase">Monthly Cost</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{formatCurrency(totalMonthly)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold text-slate-500 tracking-wide uppercase">Yearly Run Rate</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{formatCurrency(yearlyCost)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold text-slate-500 tracking-wide uppercase">Active Subs</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{activeSubs.length}</p>
-          </CardContent>
-        </Card>
-        <Card className="col-span-2 md:col-span-1 border-indigo-100 bg-indigo-50/50">
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold text-indigo-500 tracking-wide uppercase">Highest Expense</p>
-            <p className="mt-1 truncate font-bold text-slate-900">{mostExpensive?.name || 'N/A'}</p>
-            <p className="text-sm font-medium text-slate-600 mt-0.5">
-              {mostExpensive ? `${formatCurrency(getMonthlyEquivalent(mostExpensive.amount, mostExpensive.billingCycle))}/mo` : '-'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       {inactiveSubs.length > 0 && (
-        <Card className="mb-6 mb-6 border-emerald-100 bg-emerald-50/30">
+        <Card className="mb-6 border-emerald-100 bg-emerald-50/30 dark:border-emerald-900/30 dark:bg-emerald-900/10">
           <CardHeader>
-            <CardTitle className="text-emerald-800">Savings from Inactive Subscriptions</CardTitle>
+            <CardTitle className="text-emerald-800 dark:text-emerald-400">Savings from Inactive Subscriptions</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
-                <p className="text-sm text-slate-600 mb-4">
-                  By pausing or canceling <strong>{inactiveSubs.length}</strong> subscriptions, you are saving money every month. Here's a breakdown of your savings.
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                  By pausing or canceling <strong className="text-slate-900 dark:text-slate-200">{inactiveSubs.length}</strong> subscriptions, you are saving money every month. Here's a breakdown of your savings.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-semibold text-emerald-600 tracking-wide uppercase">Monthly Savings</p>
-                    <p className="mt-1 text-3xl font-extrabold text-emerald-700">{formatCurrency(totalSavedMonthly)}</p>
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-500 tracking-wide uppercase">Monthly Savings</p>
+                    <p className="mt-1 text-3xl font-extrabold text-emerald-700 dark:text-emerald-400">{formatCurrency(totalSavedMonthly)}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-600 tracking-wide uppercase">Yearly Savings</p>
-                    <p className="mt-1 text-3xl font-extrabold text-emerald-700">{formatCurrency(totalSavedYearly)}</p>
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-500 tracking-wide uppercase">Yearly Savings</p>
+                    <p className="mt-1 text-3xl font-extrabold text-emerald-700 dark:text-emerald-400">{formatCurrency(totalSavedYearly)}</p>
                   </div>
                 </div>
               </div>
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={savingsData} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                    <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `€${val}`} />
-                    <YAxis type="category" dataKey="name" axisLine={false} width={100} tickLine={false} tick={{ fontSize: 12, fill: '#475569', fontWeight: 500 }} />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" opacity={0.2} />
+                    <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={(val) => `€${val}`} />
+                    <YAxis type="category" dataKey="name" axisLine={false} width={100} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 500 }} />
                     <Tooltip 
-                      cursor={{ fill: '#f1f5f9' }}
+                      cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                       formatter={(value: number) => [formatCurrency(value), '']}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)' }}
                     />
                     <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                       {savingsData.map((entry, index) => (
@@ -170,9 +127,9 @@ export function Insights({ subscriptions }: InsightsProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Spend by Category Pie Chart */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
-            <CardTitle>Spend by Category</CardTitle>
+            <CardTitle className="dark:text-slate-100">Spend by Category</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64 w-full flex items-center justify-center">
@@ -186,6 +143,7 @@ export function Insights({ subscriptions }: InsightsProps) {
                     outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
+                    stroke="none"
                   >
                     {categoryData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -193,7 +151,7 @@ export function Insights({ subscriptions }: InsightsProps) {
                   </Pie>
                   <Tooltip 
                     formatter={(value: number) => formatCurrency(value)}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -204,9 +162,9 @@ export function Insights({ subscriptions }: InsightsProps) {
                 <div key={item.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-900">{formatCurrency(item.value)}/mo</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{formatCurrency(item.value)}/mo</span>
                 </div>
               ))}
             </div>
@@ -214,21 +172,21 @@ export function Insights({ subscriptions }: InsightsProps) {
         </Card>
 
         {/* Spend by Billing Cycle Bar Chart */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
-            <CardTitle>Spend by Billing Cycle (Monthly Equiv)</CardTitle>
+            <CardTitle className="dark:text-slate-100">Spend by Billing Cycle (Monthly Equiv)</CardTitle>
           </CardHeader>
           <CardContent>
              <div className="h-64 w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={cycleData} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `€${val}`} />
-                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#475569' }} />
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" opacity={0.2} />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={(val) => `€${val}`} />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
                   <Tooltip 
-                    cursor={{ fill: '#f1f5f9' }}
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                     formatter={(value: number) => [formatCurrency(value), 'Equivalent/mo']}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)' }}
                   />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
                     {cycleData.map((entry, index) => (
@@ -238,7 +196,7 @@ export function Insights({ subscriptions }: InsightsProps) {
                 </BarChart>
               </ResponsiveContainer>
              </div>
-             <p className="text-sm mt-6 text-slate-500 text-center">
+             <p className="text-sm mt-6 text-slate-500 dark:text-slate-400 text-center">
                This visualizes how your total cost distributes across cycle types, converted to a monthly scale.
              </p>
           </CardContent>
@@ -246,44 +204,60 @@ export function Insights({ subscriptions }: InsightsProps) {
       </div>
 
       {activeSubs.length > 0 && (
-        <Card className="mt-6 border-indigo-100 bg-indigo-50/30">
+        <Card className="mt-6 border-indigo-100 bg-indigo-50/30 dark:border-indigo-900/30 dark:bg-indigo-900/10">
           <CardHeader>
-            <CardTitle className="text-indigo-800">Long-Term Wealth Analysis</CardTitle>
+            <CardTitle className="text-indigo-800 dark:text-indigo-400">Long-Term Wealth Analysis</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
               <div>
-                <p className="text-sm text-slate-600 mb-4">
-                  If you took your <strong>{formatCurrency(totalMonthly)}</strong> monthly spend and invested it instead (assuming a 7% average annual return), here is what it could grow to over time:
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                  If you took your <strong className="text-slate-900 dark:text-slate-200">{formatCurrency(totalMonthly)}</strong> monthly spend and invested it instead (assuming a 7% average annual return), here is what it could grow to over time:
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-semibold text-indigo-600 tracking-wide uppercase">In 5 Years</p>
-                    <p className="mt-1 text-2xl font-extrabold text-indigo-700">
+                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 tracking-wide uppercase">In 5 Years</p>
+                    <p className="mt-1 text-2xl font-extrabold text-indigo-700 dark:text-indigo-300">
                       {formatCurrency(totalMonthly * ((Math.pow(1 + 0.07/12, 5 * 12) - 1) / (0.07/12)))}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-indigo-600 tracking-wide uppercase">In 10 Years</p>
-                    <p className="mt-1 text-2xl font-extrabold text-indigo-700">
+                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 tracking-wide uppercase">In 10 Years</p>
+                    <p className="mt-1 text-2xl font-extrabold text-indigo-700 dark:text-indigo-300">
                       {formatCurrency(totalMonthly * ((Math.pow(1 + 0.07/12, 10 * 12) - 1) / (0.07/12)))}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm">
-                <h4 className="text-sm font-bold text-slate-900 mb-2">Prediction</h4>
-                <p className="text-sm text-slate-600">
-                  Over 10 years, you'll spend <strong>{formatCurrency(totalMonthly * 12 * 10)}</strong> outright on these subscriptions. 
-                  By investing it instead, compound interest could earn you an additional <strong>
-                    {formatCurrency(
-                      (totalMonthly * ((Math.pow(1 + 0.07/12, 10 * 12) - 1) / (0.07/12))) - (totalMonthly * 12 * 10)
-                    )}
-                  </strong> in free money.
-                </p>
-                <p className="text-sm text-slate-600 mt-2">
-                  Consider reviewing your "Other" or "Entertainment" categories for any subscriptions you can pause to funnel toward your wealth building!
-                </p>
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-indigo-100 dark:border-indigo-800 shadow-sm">
+                <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                  Opportunity Cost Projection
+                </h4>
+                <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                  <li className="flex items-start gap-2">
+                    <span className="text-slate-400 dark:text-slate-500 mt-0.5">•</span>
+                    <span>
+                      <strong>Total Spend:</strong> Over 10 years, you'll spend <strong className="text-slate-900 dark:text-slate-200">{formatCurrency(totalMonthly * 12 * 10)}</strong> entirely on these subscriptions.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-indigo-400 dark:text-indigo-500 mt-0.5">•</span>
+                    <span>
+                      <strong>Compound Interest:</strong> By investing it instead, compound interest could earn you an additional <strong className="text-indigo-600 dark:text-indigo-400">
+                        {formatCurrency(
+                          (totalMonthly * ((Math.pow(1 + 0.07/12, 10 * 12) - 1) / (0.07/12))) - (totalMonthly * 12 * 10)
+                        )}
+                      </strong> in free returns.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-400 dark:text-slate-500 mt-0.5">•</span>
+                    <span>
+                      <strong>Recommendation:</strong> Consider reviewing your "Other" or "Entertainment" categories for any subscriptions you can pause to funnel toward your wealth building!
+                    </span>
+                  </li>
+                </ul>
               </div>
             </div>
           </CardContent>

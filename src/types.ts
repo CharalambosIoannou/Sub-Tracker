@@ -19,4 +19,6 @@ export interface Subscription {
   category: Category;
   color: string;
   isActive: boolean;
+  isTrial?: boolean;
+  trialEndDate?: string;
 }

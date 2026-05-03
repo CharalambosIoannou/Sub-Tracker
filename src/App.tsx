@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './components/Dashboard';
+import { UpcomingView } from './components/UpcomingView';
 import { SubscriptionList } from './components/SubscriptionList';
 import { Insights } from './components/Insights';
 import { Modal } from './components/ui/Modal';
 import { SubscriptionForm } from './components/SubscriptionForm';
+import { SubscriptionDetailView } from './components/SubscriptionDetailView';
 import { useSubscriptions } from './hooks/useSubscriptions';
 import { Subscription } from './types';
 
@@ -17,7 +19,18 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [subToEdit, setSubToEdit] = useState<Subscription | null>(null);
+  const [subToView, setSubToView] = useState<Subscription | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
+  // Apply dark mode to HTML tag
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   const { subscriptions, addSubscription, updateSubscription, deleteSubscription } = useSubscriptions();
 
   const handleAdd = (sub: Parameters<typeof addSubscription>[0]) => {
@@ -35,7 +48,9 @@ export default function App() {
   const renderContent = () => {
     switch (currentTab) {
       case 'dashboard':
-        return <Dashboard subscriptions={subscriptions} />;
+        return <Dashboard subscriptions={subscriptions} onNavigate={setCurrentTab} />;
+      case 'upcoming':
+        return <UpcomingView subscriptions={subscriptions} />;
       case 'subscriptions':
         return (
           <SubscriptionList 
@@ -43,7 +58,7 @@ export default function App() {
             onUpdate={updateSubscription}
             onDelete={deleteSubscription}
             onAddClick={() => setIsAddOpen(true)}
-            onEditClick={(sub) => setSubToEdit(sub)}
+            onEditClick={(sub) => setSubToView(sub)}
           />
         );
       case 'insights':
@@ -59,6 +74,8 @@ export default function App() {
         currentTab={currentTab} 
         onTabChange={setCurrentTab}
         onAddClick={() => setIsAddOpen(true)}
+        isDarkMode={isDarkMode}
+        onThemeToggle={() => setIsDarkMode(!isDarkMode)}
       >
         {renderContent()}
       </AppLayout>
@@ -72,6 +89,23 @@ export default function App() {
           onSubmit={handleAdd}
           onCancel={() => setIsAddOpen(false)}
         />
+      </Modal>
+
+      <Modal 
+        isOpen={!!subToView} 
+        onClose={() => setSubToView(null)}
+        title="Subscription Details"
+      >
+        {subToView && (
+          <SubscriptionDetailView 
+            subscription={subToView}
+            onEdit={() => {
+              setSubToEdit(subToView);
+              setSubToView(null);
+            }}
+            onClose={() => setSubToView(null)}
+          />
+        )}
       </Modal>
 
       <Modal 

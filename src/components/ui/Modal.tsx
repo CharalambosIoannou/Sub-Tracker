@@ -18,14 +18,14 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         onClick={onClose}
       />
       
-      <div className="relative z-50 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-lg animate-in fade-in zoom-in-95 sm:max-w-lg">
+      <div className="relative z-50 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-lg animate-in fade-in zoom-in-95 sm:max-w-lg border border-transparent dark:border-slate-800">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{title}</h2>
           <button 
             onClick={onClose}
-            className="rounded-full p-2 hover:bg-slate-100 transition-colors"
+            className="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            <X className="h-5 w-5 text-slate-500" />
+            <X className="h-5 w-5 text-slate-500 dark:text-slate-400" />
             <span className="sr-only">Close</span>
           </button>
         </div>
