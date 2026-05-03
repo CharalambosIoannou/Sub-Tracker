@@ -5,8 +5,6 @@ import { calculateTotalMonthlySpend, getMonthlyEquivalent } from '../lib/calcula
 import { formatCurrency } from '../lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 
-import { AIPredictions } from './AIPredictions';
-
 interface InsightsProps {
   subscriptions: Subscription[];
 }
@@ -290,10 +288,6 @@ export function Insights({ subscriptions }: InsightsProps) {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {activeSubs.length > 0 && (
-        <AIPredictions subscriptions={subscriptions} />
       )}
     </div>
   );
