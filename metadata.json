@@ -1,0 +1,6 @@
+{
+  "name": "SubTrack",
+  "description": "A progressive web app to track subscriptions, recurring payments, and gain financial insights locally.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
