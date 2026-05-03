@@ -86,11 +86,17 @@ export function Insights({ subscriptions }: InsightsProps) {
       </header>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <Card>
           <CardContent className="p-4">
             <p className="text-xs font-semibold text-slate-500 tracking-wide uppercase">Daily Burn</p>
             <p className="mt-1 text-2xl font-bold text-slate-900">{formatCurrency(dailyCost)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold text-slate-500 tracking-wide uppercase">Monthly Cost</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{formatCurrency(totalMonthly)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -238,6 +244,51 @@ export function Insights({ subscriptions }: InsightsProps) {
           </CardContent>
         </Card>
       </div>
+
+      {activeSubs.length > 0 && (
+        <Card className="mt-6 border-indigo-100 bg-indigo-50/30">
+          <CardHeader>
+            <CardTitle className="text-indigo-800">Long-Term Wealth Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <p className="text-sm text-slate-600 mb-4">
+                  If you took your <strong>{formatCurrency(totalMonthly)}</strong> monthly spend and invested it instead (assuming a 7% average annual return), here is what it could grow to over time:
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-indigo-600 tracking-wide uppercase">In 5 Years</p>
+                    <p className="mt-1 text-2xl font-extrabold text-indigo-700">
+                      {formatCurrency(totalMonthly * ((Math.pow(1 + 0.07/12, 5 * 12) - 1) / (0.07/12)))}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-indigo-600 tracking-wide uppercase">In 10 Years</p>
+                    <p className="mt-1 text-2xl font-extrabold text-indigo-700">
+                      {formatCurrency(totalMonthly * ((Math.pow(1 + 0.07/12, 10 * 12) - 1) / (0.07/12)))}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm">
+                <h4 className="text-sm font-bold text-slate-900 mb-2">Prediction</h4>
+                <p className="text-sm text-slate-600">
+                  Over 10 years, you'll spend <strong>{formatCurrency(totalMonthly * 12 * 10)}</strong> outright on these subscriptions. 
+                  By investing it instead, compound interest could earn you an additional <strong>
+                    {formatCurrency(
+                      (totalMonthly * ((Math.pow(1 + 0.07/12, 10 * 12) - 1) / (0.07/12))) - (totalMonthly * 12 * 10)
+                    )}
+                  </strong> in free money.
+                </p>
+                <p className="text-sm text-slate-600 mt-2">
+                  Consider reviewing your "Other" or "Entertainment" categories for any subscriptions you can pause to funnel toward your wealth building!
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

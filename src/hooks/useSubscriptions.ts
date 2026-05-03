@@ -3,41 +3,7 @@ import { Subscription } from '../types';
 
 const STORAGE_KEY = 'subtrack_subscriptions';
 
-const DEFAULT_SUBS_MOCK: Subscription[] = [
-  {
-    id: '1',
-    name: 'Netflix',
-    amount: 15.49,
-    currency: 'EUR',
-    billingCycle: 'monthly',
-    startDate: new Date(new Date().setMonth(new Date().getMonth() - 5)).toISOString(),
-    category: 'Entertainment',
-    color: '#E50914',
-    isActive: true,
-  },
-  {
-    id: '2',
-    name: 'Spotify',
-    amount: 10.99,
-    currency: 'EUR',
-    billingCycle: 'monthly',
-    startDate: new Date(new Date().setMonth(new Date().getMonth() - 12)).toISOString(),
-    category: 'Music',
-    color: '#1DB954',
-    isActive: true,
-  },
-  {
-    id: '3',
-    name: 'Amazon Prime',
-    amount: 139.00,
-    currency: 'EUR',
-    billingCycle: 'yearly',
-    startDate: new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString(),
-    category: 'Utility',
-    color: '#00A8E1',
-    isActive: true,
-  }
-];
+const DEFAULT_SUBS_MOCK: Subscription[] = [];
 
 export function useSubscriptions() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);

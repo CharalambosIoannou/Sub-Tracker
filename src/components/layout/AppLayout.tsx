@@ -18,7 +18,7 @@ export function AppLayout({ children, currentTab, onTabChange, onAddClick }: App
   ];
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
+    <div className="flex h-[100dvh] w-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
       {/* Desktop Sidebar */}
       <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white md:flex">
         <div className="flex h-16 items-center px-6">
