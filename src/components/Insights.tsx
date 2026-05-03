@@ -1,36 +1,15 @@
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { Sparkles } from 'lucide-react';
 import { Subscription } from '../types';
 import { calculateTotalMonthlySpend, getMonthlyEquivalent } from '../lib/calculations';
 import { formatCurrency } from '../lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 
+import { AIPredictions } from './AIPredictions';
+
 interface InsightsProps {
   subscriptions: Subscription[];
 }
-
-const ALTERNATIVES_DB: Record<string, { term: string, name: string, price: string, desc: string }[]> = {
-  'netflix': [
-    { term: 'netflix', name: 'Netflix (Standard with Ads)', price: '€5.49', desc: 'Downgrade to the ad-supported tier if you don\'t mind commercials.' },
-    { term: 'netflix', name: 'Prime Video', price: 'Included with Prime', desc: 'If you already have Prime, consider cancelling Netflix.' }
-  ],
-  'spotify': [
-    { term: 'spotify', name: 'Spotify Duo / Family', price: 'Varies', desc: 'Share the plan with your family/partner to cut individual costs.' },
-    { term: 'spotify', name: 'YouTube Music Premium', price: 'Often bundled', desc: 'If you pay for YouTube Premium, YTM is already included for free.' }
-  ],
-  'adobe': [
-    { term: 'adobe', name: 'Affinity Suite / DaVinci Resolve', price: 'One-time or Free', desc: 'Incredible professional, non-subscription tools without recurring monthly fees.' },
-    { term: 'adobe', name: 'Canva', price: 'Free / €11.99', desc: 'Good enough if you only need templates and basic assets.' }
-  ],
-  'office': [
-    { term: 'office', name: 'Google Workspace', price: 'Free', desc: 'Docs, Sheets, and Slides are completely free for personal use.' },
-    { term: 'office', name: 'LibreOffice', price: 'Free', desc: 'An open-source desktop suite that works just like Office.' }
-  ],
-  'hulu': [
-    { term: 'hulu', name: 'Hulu (With Ads)', price: 'Cheaper tier', desc: 'Switch to an ad-supported plan to save over 50% monthly.' }
-  ]
-};
 
 export function Insights({ subscriptions }: InsightsProps) {
   const activeSubs = subscriptions.filter(s => s.isActive);
@@ -92,25 +71,6 @@ export function Insights({ subscriptions }: InsightsProps) {
       { name: 'Monthly Saved', value: totalSavedMonthly, fill: '#10b981' }
     ];
   }, [totalMonthly, totalSavedMonthly]);
-
-  const smartSuggestions = useMemo(() => {
-    const recs: { originalName: string; altName: string; altPrice: string; altDesc: string; key: string }[] = [];
-    activeSubs.forEach(sub => {
-      const lowerName = sub.name.toLowerCase();
-      Object.values(ALTERNATIVES_DB).flat().forEach((alt) => {
-        if (lowerName.includes(alt.term)) {
-          recs.push({ 
-            originalName: sub.name, 
-            altName: alt.name, 
-            altPrice: alt.price, 
-            altDesc: alt.desc,
-            key: `${sub.id}-${alt.name}`
-          });
-        }
-      });
-    });
-    return recs;
-  }, [activeSubs]);
 
   if (subscriptions.length === 0) {
     return (
@@ -332,27 +292,8 @@ export function Insights({ subscriptions }: InsightsProps) {
         </Card>
       )}
 
-      {smartSuggestions.length > 0 && (
-        <div className="mt-6">
-          <div className="flex items-center gap-2 mb-4 px-1">
-            <Sparkles className="h-5 w-5 text-amber-500" />
-            <h2 className="text-xl font-bold tracking-tight text-slate-900">Smart Alternatives</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {smartSuggestions.map(rec => (
-              <Card key={rec.key} className="border-amber-100 bg-amber-50/20">
-                <CardContent className="p-5">
-                  <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Instead of {rec.originalName}</p>
-                  <h3 className="font-bold text-slate-900 text-lg">{rec.altName}</h3>
-                  <div className="mt-1 mb-3 inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-slate-700 border border-slate-200">
-                    {rec.altPrice}
-                  </div>
-                  <p className="text-sm text-slate-600">{rec.altDesc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+      {activeSubs.length > 0 && (
+        <AIPredictions subscriptions={subscriptions} />
       )}
     </div>
   );
