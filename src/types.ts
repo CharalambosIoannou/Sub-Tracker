@@ -28,4 +28,5 @@ export interface Subscription {
   trialEndDate?: string;
   notificationOffsetDays?: number; // Days before renewal to notify (custom rule)
   priceHistory?: PriceHistoryEntry[]; // Historical pricing for price hike tracking
+  iconUrl?: string; // Explicitly selected icon URL from the pool
 }

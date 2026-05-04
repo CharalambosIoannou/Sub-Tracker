@@ -16,7 +16,7 @@ export function SubscriptionDetailView({ subscription, onEdit, onClose }: Subscr
       <div className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800">
         <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center mb-4">
           <img 
-            src={getBrandLogoUrl(subscription.name)} 
+            src={subscription.iconUrl || getBrandLogoUrl(subscription.name)} 
             alt={subscription.name}
             className="w-full h-full object-cover"
             onError={(e) => {

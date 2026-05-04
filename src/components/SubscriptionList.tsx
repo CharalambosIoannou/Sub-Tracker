@@ -141,7 +141,7 @@ export function SubscriptionList({ subscriptions, onUpdate, onDelete, onAddClick
                     className="flex h-12 w-12 items-center justify-center rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-200 dark:border-slate-700"
                   >
                     <img 
-                      src={getBrandLogoUrl(sub.name)} 
+                      src={sub.iconUrl || getBrandLogoUrl(sub.name)} 
                       alt={sub.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {

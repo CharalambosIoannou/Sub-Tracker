@@ -118,7 +118,7 @@ export function Dashboard({ subscriptions, onNavigate, onEditClick }: DashboardP
                   <CardContent className="p-4 flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700">
                       <img 
-                        src={getBrandLogoUrl(subscription.name)} 
+                        src={subscription.iconUrl || getBrandLogoUrl(subscription.name)} 
                         alt={subscription.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {

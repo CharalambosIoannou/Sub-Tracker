@@ -2,6 +2,8 @@ import { useState, FormEvent } from 'react';
 import { Subscription, BillingCycle, Category } from '../types';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
+import { cn, getBrandLogoUrl } from '../lib/utils';
+import { IconSelectorModal } from './IconSelectorModal';
 
 export interface SubscriptionFormData extends Omit<Subscription, 'id'> {}
 
@@ -44,6 +46,8 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
   const [color, setColor] = useState(initialData?.color || COLORS[0]);
   const [isTrial, setIsTrial] = useState(initialData?.isTrial || false);
   const [trialEndDate, setTrialEndDate] = useState(initialData?.trialEndDate ? new Date(initialData.trialEndDate).toISOString().split('T')[0] : '');
+  const [iconUrl, setIconUrl] = useState(initialData?.iconUrl || '');
+  const [isIconSelectorOpen, setIsIconSelectorOpen] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -60,10 +64,12 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
       isActive: initialData?.isActive ?? true,
       isTrial,
       trialEndDate: isTrial && trialEndDate ? new Date(trialEndDate).toISOString() : undefined,
+      iconUrl: iconUrl || undefined,
     });
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-medium dark:text-slate-200">Name</label>
@@ -74,6 +80,48 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
           onChange={(e) => setName(e.target.value)} 
           className="dark:bg-slate-900 border-slate-200 dark:border-slate-800"
         />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium dark:text-slate-200">Brand Icon</label>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700 bg-white flex items-center justify-center shrink-0">
+            {iconUrl || name ? (
+              <img 
+                src={iconUrl || getBrandLogoUrl(name)} 
+                alt={name || "Icon"}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                  const parent = (e.target as HTMLElement).parentElement;
+                  if (parent) {
+                    parent.innerHTML = `<span class="text-sm font-bold text-slate-900">${name ? name.charAt(0).toUpperCase() : '?'}</span>`;
+                  }
+                }}
+              />
+            ) : (
+              <span className="text-xl font-bold text-slate-300 dark:text-slate-600">?</span>
+            )}
+          </div>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => setIsIconSelectorOpen(true)}
+            className="flex-1 max-w-[200px]"
+          >
+            Select Icon
+          </Button>
+          {(iconUrl) && (
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => setIconUrl('')}
+              className="px-2 text-slate-400 hover:text-slate-600"
+            >
+              Clear
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-[1fr_80px] gap-2 items-end">
@@ -95,7 +143,7 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
         </div>
         <div className="space-y-2">
            <select 
-            className="flex h-10 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="flex h-10 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-100"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
           >
@@ -111,7 +159,7 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
         <div className="space-y-2">
           <label className="text-sm font-medium dark:text-slate-200">Billing Cycle</label>
           <select 
-            className="flex h-10 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="flex h-10 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-100"
             value={cycle}
             onChange={(e) => setCycle(e.target.value as BillingCycle)}
           >
@@ -162,7 +210,7 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
       <div className="space-y-2">
         <label className="text-sm font-medium dark:text-slate-200">Category</label>
         <select 
-          className="flex h-10 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="flex h-10 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-slate-100"
           value={category}
           onChange={(e) => setCategory(e.target.value as Category)}
         >
@@ -178,8 +226,11 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
               key={c}
               type="button"
               onClick={() => setColor(c)}
-              className="w-8 h-8 rounded-full border-2 transition-all focus:outline-none"
-              style={{ backgroundColor: c, borderColor: color === c ? '#0f172a' : 'transparent' }}
+              className={cn(
+                "w-8 h-8 rounded-full transition-all focus:outline-none ring-offset-2 dark:ring-offset-slate-950",
+                color === c ? "ring-2 ring-indigo-500 scale-110" : "ring-0 hover:scale-110"
+              )}
+              style={{ backgroundColor: c }}
               aria-label={`Select color ${c}`}
             />
           ))}
@@ -193,5 +244,11 @@ export function SubscriptionForm({ initialData, onSubmit, onCancel }: Subscripti
         </Button>
       </div>
     </form>
+    <IconSelectorModal 
+      isOpen={isIconSelectorOpen}
+      onClose={() => setIsIconSelectorOpen(false)}
+      onSelect={(url) => setIconUrl(url)}
+    />
+    </>
   );
 }

@@ -53,7 +53,7 @@ export function UpcomingView({ subscriptions }: UpcomingViewProps) {
                   <div className="flex items-center">
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 overflow-hidden shrink-0 shadow-sm border border-slate-200 dark:border-slate-700">
                       <img 
-                        src={getBrandLogoUrl(subscription.name)} 
+                        src={subscription.iconUrl || getBrandLogoUrl(subscription.name)} 
                         alt={subscription.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
